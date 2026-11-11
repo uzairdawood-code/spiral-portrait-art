@@ -24,25 +24,30 @@
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const img = new Image();
-        img.crossOrigin = "anonymous";
         img.src = 'image_2d82c0.jpg';
 
         img.onload = function() {
-            // Draw image to canvas to sample pixel data
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            let imgData;
+            try {
+                imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            } catch (e) {
+                console.error("Image data error:", e);
+                return;
+            }
+            
             ctx.fillStyle = "black";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             let theta = 0;
             const maxTheta = 60 * 2 * Math.PI;
-            const step = 0.4;
+            const step = 0.35;
             const cx = canvas.width / 2;
             const cy = canvas.height / 2;
-            const a = 2.0;
+            const a = 1.8;
 
             function animate() {
-                let batchEnd = Math.min(theta + 30, maxTheta);
+                let batchEnd = Math.min(theta + 40, maxTheta);
                 while (theta < batchEnd) {
                     let r = a * theta;
                     let x = cx + r * Math.cos(theta);
@@ -58,10 +63,11 @@
                         let b_val = imgData.data[index + 2];
                         let brightness = (r_val + g_val + b_val) / 3;
 
-                        // Draw dots based on image brightness
-                        let size = Math.max(1, Math.floor((255 - brightness) / 50));
-                        ctx.fillStyle = `rgb(${r_val}, ${g_val}, ${b_val})`;
-                        ctx.fillRect(x, y, size, size);
+                        if (brightness < 240) {
+                            let size = Math.max(1, Math.floor((255 - brightness) / 45));
+                            ctx.fillStyle = `rgb(${r_val}, ${g_val}, ${b_val})`;
+                            ctx.fillRect(x, y, size, size);
+                        }
                     }
                     theta += step;
                 }
