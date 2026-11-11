@@ -8,25 +8,10 @@
             margin: 0;
             background-color: #000;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
             overflow: hidden;
-            font-family: sans-serif;
-            color: #fff;
-        }
-        #upload-container {
-            position: absolute;
-            top: 20px;
-            z-index: 10;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 10px 20px;
-            border-radius: 8px;
-            backdrop-filter: blur(5px);
-        }
-        input[type="file"] {
-            color: #fff;
         }
         canvas {
             background-color: #000;
@@ -34,18 +19,14 @@
     </style>
 </head>
 <body>
-    <div id="upload-container">
-        <label>Select Image if blank: </label>
-        <input type="file" id="imageLoader" accept="image/*">
-    </div>
     <canvas id="canvas" width="800" height="800"></canvas>
-
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
-        const imageLoader = document.getElementById('imageLoader');
+        const img = new Image();
+        img.src = 'image_2d82c0.jpg';
 
-        function processImage(img) {
+        img.onload = function() {
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -58,20 +39,26 @@
             ctx.drawImage(img, 0, 0, img.width, img.height, 
                                centerShiftX, centerShiftY, img.width * ratio, img.height * ratio);
 
-            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            let imgData;
+            try {
+                imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            } catch (e) {
+                alert("Error: " + e.message);
+                return;
+            }
             
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             let theta = 0;
-            const maxTheta = 80 * 2 * Math.PI;
-            const step = 0.25;
+            const maxTheta = 70 * 2 * Math.PI;
+            const step = 0.3;
             const cx = canvas.width / 2;
             const cy = canvas.height / 2;
-            const a = 1.5;
+            const a = 1.8;
 
             function animate() {
-                let batchEnd = Math.min(theta + 80, maxTheta);
+                let batchEnd = Math.min(theta + 50, maxTheta);
                 while (theta < batchEnd) {
                     let r = a * theta;
                     let x = cx + r * Math.cos(theta);
@@ -101,28 +88,10 @@
                 }
             }
             animate();
-        }
-
-        // Try loading default repo image automatically
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        img.src = 'image_2d82c0.jpg';
-        img.onload = function() {
-            processImage(img);
         };
 
-        // Fallback or manual upload handler
-        imageLoader.addEventListener('change', function(e) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const userImg = new Image();
-                userImg.onload = function() {
-                    processImage(userImg);
-                }
-                userImg.src = event.target.result;
-            }
-            reader.readAsDataURL(e.target.files[0]);
-        });
+        img.onerror = function() {
+            alert("Could not find 'image_2d82c0.jpg'");
+        };
     </script>
 </body>
-</html>
